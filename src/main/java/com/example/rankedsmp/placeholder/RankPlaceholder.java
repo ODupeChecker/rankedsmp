@@ -43,7 +43,7 @@ public class RankPlaceholder extends PlaceholderExpansion {
         if (player == null) {
             return unrankedLabel;
         }
-        int rank = rankManager.getRank(player.getUniqueId());
+        int rank = rankManager.getRankOrUnranked(player.getUniqueId());
         if (rank <= 0) {
             return unrankedLabel;
         }

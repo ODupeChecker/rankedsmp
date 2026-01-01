@@ -25,7 +25,7 @@ public class JoinDisplayManager {
         if (player == null || !configManager.isJoinDisplayEnabled()) {
             return;
         }
-        int rank = rankManager.getRank(player.getUniqueId());
+        int rank = rankManager.getRankOrUnranked(player.getUniqueId());
         boolean ranked = rank > 0;
         String titleText = applyPlaceholders(player, configManager.getJoinDisplayTitle(), rank);
         String subtitleTemplate = ranked

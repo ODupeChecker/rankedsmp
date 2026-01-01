@@ -40,7 +40,7 @@ public class PotionListener implements Listener {
         if (event.getIntensity(player) <= 0.0) {
             return;
         }
-        int rank = rankManager.getRank(player.getUniqueId());
+        int rank = rankManager.getRankOrUnranked(player.getUniqueId());
         if (rank <= 0) {
             return;
         }

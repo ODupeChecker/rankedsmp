@@ -70,7 +70,7 @@ public class RankAdminCommand implements CommandExecutor {
             updateOnline(target);
             sender.sendMessage(TextUtils.color(configManager.getMessage("admin-set")
                     .replace("%player%", target.getName() != null ? target.getName() : "Unknown")
-                    .replace("%rank%", "Unranked")));
+                    .replace("%rank%", configManager.getUnrankedLabel())));
             return;
         }
         int rank;
@@ -84,7 +84,7 @@ public class RankAdminCommand implements CommandExecutor {
             sender.sendMessage(TextUtils.color(configManager.getMessage("admin-invalid-rank")));
             return;
         }
-        boolean success = rankManager.setRank(target.getUniqueId(), rank);
+        boolean success = rankManager.setRankIfAvailable(target.getUniqueId(), rank);
         if (!success) {
             sender.sendMessage(TextUtils.color(configManager.getMessage("admin-set-full")
                     .replace("%rank%", String.valueOf(rank))));
@@ -137,11 +137,11 @@ public class RankAdminCommand implements CommandExecutor {
             sender.sendMessage(TextUtils.color(configManager.getMessage("player-not-found")));
             return;
         }
-        int rank = rankManager.assignRandomRank(target.getUniqueId());
+        int rank = rankManager.assignRandomRankIfAvailable(target.getUniqueId());
         updateOnline(target);
         sender.sendMessage(TextUtils.color(configManager.getMessage("admin-give")
                 .replace("%player%", target.getName() != null ? target.getName() : "Unknown")
-                .replace("%rank%", rank > 0 ? String.valueOf(rank) : "Unranked")));
+                .replace("%rank%", rank > 0 ? String.valueOf(rank) : configManager.getUnrankedLabel())));
     }
 
     private void handleReset(CommandSender sender, String[] args) {

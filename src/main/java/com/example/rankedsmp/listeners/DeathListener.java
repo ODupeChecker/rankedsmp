@@ -29,8 +29,8 @@ public class DeathListener implements Listener {
         if (killer == null) {
             return;
         }
-        int victimRank = rankManager.getRank(victim.getUniqueId());
-        int killerRank = rankManager.getRank(killer.getUniqueId());
+        int victimRank = rankManager.getRankOrUnranked(victim.getUniqueId());
+        int killerRank = rankManager.getRankOrUnranked(killer.getUniqueId());
         if (victimRank <= 0 || killerRank <= 0) {
             return;
         }
