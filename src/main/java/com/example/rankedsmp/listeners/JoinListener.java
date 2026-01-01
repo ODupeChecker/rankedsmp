@@ -38,11 +38,7 @@ public class JoinListener implements Listener {
                 player.sendMessage(TextUtils.color(configManager.getMessage("rank-unranked")));
             }
         }
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            if (player.isOnline()) {
-                rankManager.applyHealthBonus(player);
-            }
-        });
+        Bukkit.getScheduler().runTask(plugin, () -> rankManager.applyHealthBonusWithRetry(player));
         plugin.updatePlaceholders(player);
         plugin.updateLuckPermsPrefix(player, rank);
         joinDisplayManager.showJoinDisplay(player);

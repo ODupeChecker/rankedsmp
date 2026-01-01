@@ -178,7 +178,7 @@ public class RankAdminCommand implements CommandExecutor {
         if (player.isOnline()) {
             Player online = player.getPlayer();
             if (online != null) {
-                rankManager.applyHealthBonus(online);
+                rankManager.applyHealthBonusWithRetry(online);
                 plugin.updatePlaceholders(online);
             }
         }

@@ -7,6 +7,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
@@ -181,9 +182,32 @@ public class RankManager {
         }
     }
 
+    public void applyHealthBonusWithRetry(Player player) {
+        if (player == null) {
+            return;
+        }
+        applyHealthBonus(player);
+        new BukkitRunnable() {
+            private int attempts = 0;
+
+            @Override
+            public void run() {
+                if (!player.isOnline()) {
+                    cancel();
+                    return;
+                }
+                applyHealthBonus(player);
+                attempts++;
+                if (attempts >= 5) {
+                    cancel();
+                }
+            }
+        }.runTaskTimer(plugin, 1L, 20L);
+    }
+
     public void applyHealthBonusToOnline() {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            applyHealthBonus(player);
+            applyHealthBonusWithRetry(player);
         }
     }
 
