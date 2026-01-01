@@ -52,7 +52,7 @@ public class JoinDisplayManager {
         if (text == null) {
             return "";
         }
-        String replaced = text.replace("%rank%", rank > 0 ? String.valueOf(rank) : "Unranked");
+        String replaced = text.replace("%rank%", rank > 0 ? String.valueOf(rank) : configManager.getUnrankedLabel());
         if (placeholderApiAvailable) {
             try {
                 replaced = PlaceholderAPI.setPlaceholders(player, replaced);

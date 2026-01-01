@@ -58,3 +58,6 @@ join-display:
   fade-out: 10
   send-chat-message: false
   chat-message: "§aWelcome! Your rank is §e%rank%"
+
+placeholders:
+  unranked-label: "Unranked"

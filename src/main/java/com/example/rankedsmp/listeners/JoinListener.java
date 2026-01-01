@@ -38,6 +38,7 @@ public class JoinListener implements Listener {
         }
         rankManager.applyHealthBonus(player);
         plugin.updatePlaceholders(player);
+        plugin.updateLuckPermsPrefix(player, rankManager.getRank(player.getUniqueId()));
         joinDisplayManager.showJoinDisplay(player);
     }
 }

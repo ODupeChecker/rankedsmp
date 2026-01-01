@@ -1,5 +1,6 @@
 package com.example.rankedsmp.rank;
 
+import com.example.rankedsmp.RankedSMP;
 import com.example.rankedsmp.config.ConfigManager;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
@@ -89,6 +90,7 @@ public class RankManager {
         if (rank <= 0) {
             ranks.put(uuid, UNRANKED);
             saveData();
+            updateLuckPermsPrefix(uuid, UNRANKED);
             return true;
         }
         if (rank > configManager.getRankCount()) {
@@ -100,17 +102,20 @@ public class RankManager {
         }
         ranks.put(uuid, rank);
         saveData();
+        updateLuckPermsPrefix(uuid, rank);
         return true;
     }
 
     public void resetRank(UUID uuid) {
         ranks.put(uuid, UNRANKED);
         saveData();
+        updateLuckPermsPrefix(uuid, UNRANKED);
     }
 
     public void resetAll() {
         ranks.clear();
         saveData();
+        updateLuckPermsForOnlinePlayers();
     }
 
     public boolean swapRanks(UUID first, UUID second) {
@@ -122,6 +127,8 @@ public class RankManager {
         ranks.put(first, rankB);
         ranks.put(second, rankA);
         saveData();
+        updateLuckPermsPrefix(first, rankB);
+        updateLuckPermsPrefix(second, rankA);
         return true;
     }
 
@@ -211,6 +218,22 @@ public class RankManager {
             config.save(dataFile);
         } catch (IOException ex) {
             plugin.getLogger().severe("Failed to save ranks.yml: " + ex.getMessage());
+        }
+    }
+
+    private void updateLuckPermsPrefix(UUID uuid, int rank) {
+        if (plugin instanceof RankedSMP rankedSMP) {
+            rankedSMP.updateLuckPermsPrefix(uuid, rank);
+        }
+    }
+
+    private void updateLuckPermsForOnlinePlayers() {
+        if (!(plugin instanceof RankedSMP rankedSMP)) {
+            return;
+        }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            int rank = getRank(player.getUniqueId());
+            rankedSMP.updateLuckPermsPrefix(player.getUniqueId(), rank);
         }
     }
 }

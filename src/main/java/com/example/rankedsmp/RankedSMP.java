@@ -6,6 +6,7 @@ import com.example.rankedsmp.config.ConfigManager;
 import com.example.rankedsmp.listeners.DeathListener;
 import com.example.rankedsmp.listeners.JoinListener;
 import com.example.rankedsmp.listeners.PotionListener;
+import com.example.rankedsmp.integration.LuckPermsIntegration;
 import com.example.rankedsmp.placeholder.RankPlaceholder;
 import com.example.rankedsmp.rank.RankManager;
 import com.example.rankedsmp.util.JoinDisplayManager;
@@ -13,11 +14,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.UUID;
+
 public class RankedSMP extends JavaPlugin {
     private ConfigManager configManager;
     private RankManager rankManager;
     private JoinDisplayManager joinDisplayManager;
     private RankPlaceholder placeholder;
+    private LuckPermsIntegration luckPermsIntegration;
 
     @Override
     public void onEnable() {
@@ -40,8 +44,12 @@ public class RankedSMP extends JavaPlugin {
         }
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            placeholder = new RankPlaceholder(rankManager);
+            placeholder = new RankPlaceholder(rankManager, configManager.getUnrankedLabel());
             placeholder.register();
+        }
+
+        if (Bukkit.getPluginManager().isPluginEnabled("LuckPerms")) {
+            luckPermsIntegration = new LuckPermsIntegration();
         }
     }
 
@@ -57,5 +65,25 @@ public class RankedSMP extends JavaPlugin {
             return;
         }
         // PlaceholderAPI handles updates via periodic refresh on supported plugins.
+    }
+
+    public LuckPermsIntegration getLuckPermsIntegration() {
+        return luckPermsIntegration;
+    }
+
+    public void updateLuckPermsPrefix(Player player, int rank) {
+        if (luckPermsIntegration == null || player == null) {
+            return;
+        }
+        String rankLabel = rank > 0 ? String.valueOf(rank) : configManager.getUnrankedLabel();
+        luckPermsIntegration.updateUserPrefix(player.getUniqueId(), rankLabel);
+    }
+
+    public void updateLuckPermsPrefix(UUID uuid, int rank) {
+        if (luckPermsIntegration == null) {
+            return;
+        }
+        String rankLabel = rank > 0 ? String.valueOf(rank) : configManager.getUnrankedLabel();
+        luckPermsIntegration.updateUserPrefix(uuid, rankLabel);
     }
 }

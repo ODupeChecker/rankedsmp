@@ -24,6 +24,7 @@ public class ConfigManager {
     private int joinDisplayFadeOut;
     private boolean joinDisplaySendChat;
     private String joinDisplayChatMessage;
+    private String unrankedLabel;
     private List<RankRange> rankRanges = new ArrayList<>();
 
     public ConfigManager(JavaPlugin plugin) {
@@ -49,6 +50,7 @@ public class ConfigManager {
         joinDisplayFadeOut = Math.max(0, config.getInt("join-display.fade-out", 10));
         joinDisplaySendChat = config.getBoolean("join-display.send-chat-message", false);
         joinDisplayChatMessage = config.getString("join-display.chat-message", "§aWelcome! Your rank is §e%rank%");
+        unrankedLabel = config.getString("placeholders.unranked-label", "Unranked");
         rankRanges = loadRankRanges(config);
     }
 
@@ -119,6 +121,10 @@ public class ConfigManager {
 
     public String getJoinDisplayChatMessage() {
         return joinDisplayChatMessage;
+    }
+
+    public String getUnrankedLabel() {
+        return unrankedLabel;
     }
 
     public int getExtraHeartsForRank(int rank) {
