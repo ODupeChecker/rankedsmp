@@ -11,6 +11,7 @@ public final class TextUtils {
         if (message == null) {
             return Component.empty();
         }
-        return LegacyComponentSerializer.legacyAmpersand().deserialize(message);
+        String normalized = message.replace('&', '§');
+        return LegacyComponentSerializer.legacySection().deserialize(normalized);
     }
 }

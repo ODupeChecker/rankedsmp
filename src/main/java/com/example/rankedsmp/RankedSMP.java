@@ -8,6 +8,7 @@ import com.example.rankedsmp.listeners.JoinListener;
 import com.example.rankedsmp.listeners.PotionListener;
 import com.example.rankedsmp.placeholder.RankPlaceholder;
 import com.example.rankedsmp.rank.RankManager;
+import com.example.rankedsmp.util.JoinDisplayManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -15,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class RankedSMP extends JavaPlugin {
     private ConfigManager configManager;
     private RankManager rankManager;
+    private JoinDisplayManager joinDisplayManager;
     private RankPlaceholder placeholder;
 
     @Override
@@ -24,8 +26,9 @@ public class RankedSMP extends JavaPlugin {
         }
         configManager = new ConfigManager(this);
         rankManager = new RankManager(this, configManager);
+        joinDisplayManager = new JoinDisplayManager(configManager, rankManager);
 
-        Bukkit.getPluginManager().registerEvents(new JoinListener(this, rankManager, configManager), this);
+        Bukkit.getPluginManager().registerEvents(new JoinListener(this, rankManager, configManager, joinDisplayManager), this);
         Bukkit.getPluginManager().registerEvents(new PotionListener(rankManager, configManager), this);
         Bukkit.getPluginManager().registerEvents(new DeathListener(this, rankManager, configManager), this);
 

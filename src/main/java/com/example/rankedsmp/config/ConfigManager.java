@@ -15,6 +15,15 @@ public class ConfigManager {
     private boolean rankSwappingEnabled;
     private boolean potionBonusesEnabled;
     private boolean healthBonusesEnabled;
+    private boolean joinDisplayEnabled;
+    private String joinDisplayTitle;
+    private String joinDisplaySubtitleRanked;
+    private String joinDisplaySubtitleUnranked;
+    private int joinDisplayFadeIn;
+    private int joinDisplayStay;
+    private int joinDisplayFadeOut;
+    private boolean joinDisplaySendChat;
+    private String joinDisplayChatMessage;
     private List<RankRange> rankRanges = new ArrayList<>();
 
     public ConfigManager(JavaPlugin plugin) {
@@ -31,6 +40,15 @@ public class ConfigManager {
         rankSwappingEnabled = config.getBoolean("features.rank-swapping", true);
         potionBonusesEnabled = config.getBoolean("features.potion-bonuses", true);
         healthBonusesEnabled = config.getBoolean("features.health-bonuses", true);
+        joinDisplayEnabled = config.getBoolean("join-display.enabled", true);
+        joinDisplayTitle = config.getString("join-display.title", "§6§lWELCOME");
+        joinDisplaySubtitleRanked = config.getString("join-display.subtitle-ranked", "§eYour Rank: §6%rank%");
+        joinDisplaySubtitleUnranked = config.getString("join-display.subtitle-unranked", "§7You are Unranked");
+        joinDisplayFadeIn = Math.max(0, config.getInt("join-display.fade-in", 10));
+        joinDisplayStay = Math.max(0, config.getInt("join-display.stay", 60));
+        joinDisplayFadeOut = Math.max(0, config.getInt("join-display.fade-out", 10));
+        joinDisplaySendChat = config.getBoolean("join-display.send-chat-message", false);
+        joinDisplayChatMessage = config.getString("join-display.chat-message", "§aWelcome! Your rank is §e%rank%");
         rankRanges = loadRankRanges(config);
     }
 
@@ -38,7 +56,9 @@ public class ConfigManager {
         List<RankRange> ranges = new ArrayList<>();
         List<java.util.Map<?, ?>> list = config.getMapList("rank-ranges");
         for (java.util.Map<?, ?> entry : list) {
-            ConfigurationSection section = config.createSection("temp", (java.util.Map<String, Object>) entry);
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> map = (java.util.Map<String, Object>) entry;
+            ConfigurationSection section = config.createSection("temp", map);
             ranges.add(RankRange.fromSection(section));
             config.set("temp", null);
         }
@@ -63,6 +83,42 @@ public class ConfigManager {
 
     public boolean isHealthBonusesEnabled() {
         return healthBonusesEnabled;
+    }
+
+    public boolean isJoinDisplayEnabled() {
+        return joinDisplayEnabled;
+    }
+
+    public String getJoinDisplayTitle() {
+        return joinDisplayTitle;
+    }
+
+    public String getJoinDisplaySubtitleRanked() {
+        return joinDisplaySubtitleRanked;
+    }
+
+    public String getJoinDisplaySubtitleUnranked() {
+        return joinDisplaySubtitleUnranked;
+    }
+
+    public int getJoinDisplayFadeIn() {
+        return joinDisplayFadeIn;
+    }
+
+    public int getJoinDisplayStay() {
+        return joinDisplayStay;
+    }
+
+    public int getJoinDisplayFadeOut() {
+        return joinDisplayFadeOut;
+    }
+
+    public boolean isJoinDisplaySendChat() {
+        return joinDisplaySendChat;
+    }
+
+    public String getJoinDisplayChatMessage() {
+        return joinDisplayChatMessage;
     }
 
     public int getExtraHeartsForRank(int rank) {

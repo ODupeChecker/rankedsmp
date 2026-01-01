@@ -47,3 +47,14 @@ messages:
   admin-resetall: "&aAll ranks have been reset."
   admin-set-full: "&cRank &e%rank%&c is full."
   admin-invalid-rank: "&cInvalid rank."
+
+join-display:
+  enabled: true
+  title: "§6§lWELCOME"
+  subtitle-ranked: "§eYour Rank: §6%rank%"
+  subtitle-unranked: "§7You are Unranked"
+  fade-in: 10
+  stay: 60
+  fade-out: 10
+  send-chat-message: false
+  chat-message: "§aWelcome! Your rank is §e%rank%"
