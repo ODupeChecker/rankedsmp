@@ -37,7 +37,7 @@ public class JoinListener implements Listener {
             }
         }
         rankManager.applyHealthBonus(player);
-        plugin.updatePlaceholders(player);
+        plugin.updatePlayerDisplay(player);
         joinDisplayManager.showJoinDisplay(player);
     }
 }
