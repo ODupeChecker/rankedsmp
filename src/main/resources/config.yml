@@ -1,0 +1,60 @@
+rank-count: 20
+max-players-per-rank: 5
+
+features:
+  rank-swapping: true
+  potion-bonuses: true
+  health-bonuses: true
+
+rank-ranges:
+  - min: 1
+    max: 1
+    potion-minutes: 16
+    extra-hearts: 10
+  - min: 2
+    max: 5
+    potion-minutes: 10
+    extra-hearts: 8
+  - min: 6
+    max: 10
+    potion-minutes: 8
+    extra-hearts: 7
+  - min: 11
+    max: 15
+    potion-minutes: 6
+    extra-hearts: 4
+  - min: 16
+    max: 20
+    potion-minutes: 5
+    extra-hearts: 3
+
+messages:
+  prefix: "&6[RankedSMP]&r "
+  no-permission: "&cYou do not have permission to do that."
+  player-only: "&cThis command can only be used by players."
+  player-not-found: "&cPlayer not found."
+  rank-assigned: "&aYou have been assigned rank &e%rank%&a."
+  rank-unranked: "&cYou are unranked."
+  rank-info: "&e%player%&7: Rank &e%rank%&7 | Hearts &c%hearts%&7 | Potion &b%potion% min"
+  rank-top-header: "&eRank populations:"
+  rank-top-entry: "&7Rank &e%rank%&7: &e%count%&7/&e%max%"
+  rank-top-unranked: "&7Unranked: &e%count%"
+  admin-reload: "&aRankedSMP config reloaded."
+  admin-set: "&aSet &e%player%&a to rank &e%rank%&a."
+  admin-swap: "&aSwapped ranks for &e%player1%&a and &e%player2%&a."
+  admin-give: "&aAssigned rank &e%rank%&a to &e%player%&a."
+  admin-reset: "&aReset rank for &e%player%&a."
+  admin-resetall: "&aAll ranks have been reset."
+  admin-set-full: "&cRank &e%rank%&c is full."
+  admin-invalid-rank: "&cInvalid rank."
+
+join-display:
+  enabled: true
+  title: "§6§lWELCOME"
+  subtitle-ranked: "§eYour Rank: §6%rank%"
+  subtitle-unranked: "§7You are Unranked"
+  fade-in: 10
+  stay: 60
+  fade-out: 10
+  send-chat-message: false
+  chat-message: "§aWelcome! Your rank is §e%rank%"

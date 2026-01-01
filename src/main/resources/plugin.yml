@@ -1,0 +1,32 @@
+name: RankedSMP
+main: com.example.rankedsmp.RankedSMP
+version: 1.0.0
+api-version: '1.21'
+author: OpenAI
+softdepend: [PlaceholderAPI]
+commands:
+  rank:
+    description: View rank info and stats.
+    usage: /rank
+  rankadmin:
+    description: Admin rank management.
+    usage: /rankadmin
+permissions:
+  rankedsmp.admin.reload:
+    description: Reload RankedSMP configuration.
+    default: op
+  rankedsmp.admin.set:
+    description: Set a player's rank.
+    default: op
+  rankedsmp.admin.swap:
+    description: Swap ranks between players.
+    default: op
+  rankedsmp.admin.give:
+    description: Assign a random rank to a player.
+    default: op
+  rankedsmp.admin.reset:
+    description: Reset a player's rank.
+    default: op
+  rankedsmp.admin.resetall:
+    description: Reset all player ranks.
+    default: op
