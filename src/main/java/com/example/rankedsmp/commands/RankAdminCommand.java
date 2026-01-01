@@ -171,6 +171,7 @@ public class RankAdminCommand implements CommandExecutor {
         }
         rankManager.resetAll();
         rankManager.applyHealthBonusToOnline();
+        plugin.updateAllPlayerDisplays();
         sender.sendMessage(TextUtils.color(configManager.getMessage("admin-resetall")));
     }
 
@@ -179,7 +180,7 @@ public class RankAdminCommand implements CommandExecutor {
             Player online = player.getPlayer();
             if (online != null) {
                 rankManager.applyHealthBonus(online);
-                plugin.updatePlaceholders(online);
+                plugin.updatePlayerDisplay(online);
             }
         }
     }

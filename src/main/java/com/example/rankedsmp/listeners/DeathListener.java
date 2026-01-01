@@ -38,8 +38,8 @@ public class DeathListener implements Listener {
             rankManager.swapRanks(killer.getUniqueId(), victim.getUniqueId());
             rankManager.applyHealthBonus(killer);
             rankManager.applyHealthBonus(victim);
-            plugin.updatePlaceholders(killer);
-            plugin.updatePlaceholders(victim);
+            plugin.updatePlayerDisplay(killer);
+            plugin.updatePlayerDisplay(victim);
         }
     }
 }
