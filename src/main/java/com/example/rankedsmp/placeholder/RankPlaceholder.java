@@ -6,9 +6,21 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 public class RankPlaceholder extends PlaceholderExpansion {
     private final RankManager rankManager;
+    private final String unrankedLabel;
 
-    public RankPlaceholder(RankManager rankManager) {
+    public RankPlaceholder(RankManager rankManager, String unrankedLabel) {
         this.rankManager = rankManager;
+        this.unrankedLabel = unrankedLabel;
+    }
+
+    @Override
+    public boolean persist() {
+        return true;
+    }
+
+    @Override
+    public boolean canRegister() {
+        return true;
     }
 
     @Override
@@ -29,11 +41,11 @@ public class RankPlaceholder extends PlaceholderExpansion {
     @Override
     public String onRequest(OfflinePlayer player, String params) {
         if (player == null) {
-            return "Unranked";
+            return unrankedLabel;
         }
-        int rank = rankManager.getRank(player.getUniqueId());
+        int rank = rankManager.getRankOrUnranked(player.getUniqueId());
         if (rank <= 0) {
-            return "Unranked";
+            return unrankedLabel;
         }
         return String.valueOf(rank);
     }

@@ -1,11 +1,13 @@
 package com.example.rankedsmp.rank;
 
+import com.example.rankedsmp.RankedSMP;
 import com.example.rankedsmp.config.ConfigManager;
 import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +24,8 @@ public class RankManager {
     private final JavaPlugin plugin;
     private final ConfigManager configManager;
     private final Map<UUID, Integer> ranks = new HashMap<>();
+    private final Map<Integer, Integer> rankCounts = new HashMap<>();
+    private int unrankedCount = 0;
     private final Random random = new Random();
     private final File dataFile;
 
@@ -29,23 +33,27 @@ public class RankManager {
         this.plugin = plugin;
         this.configManager = configManager;
         this.dataFile = new File(plugin.getDataFolder(), "ranks.yml");
-        loadData();
+        loadAll();
     }
 
     public void reload() {
-        loadData();
+        loadAll();
     }
 
-    public int getRank(UUID uuid) {
-        return ranks.getOrDefault(uuid, UNRANKED);
-    }
-
-    public boolean hasRankEntry(UUID uuid) {
+    public boolean hasRank(UUID uuid) {
         return ranks.containsKey(uuid);
     }
 
+    public Integer getRank(UUID uuid) {
+        return ranks.get(uuid);
+    }
+
+    public int getRankOrUnranked(UUID uuid) {
+        return ranks.getOrDefault(uuid, UNRANKED);
+    }
+
     public boolean isRanked(UUID uuid) {
-        return getRank(uuid) > 0;
+        return getRankOrUnranked(uuid) > 0;
     }
 
     public int getExtraHearts(int rank) {
@@ -65,7 +73,10 @@ public class RankManager {
         return false;
     }
 
-    public int assignRandomRank(UUID uuid) {
+    public int assignRandomRankIfAvailable(UUID uuid) {
+        if (hasRank(uuid)) {
+            return getRankOrUnranked(uuid);
+        }
         List<Integer> available = new ArrayList<>();
         for (int rank = 1; rank <= configManager.getRankCount(); rank++) {
             if (getRankCount(rank) < configManager.getMaxPlayersPerRank()) {
@@ -73,76 +84,75 @@ public class RankManager {
             }
         }
         if (available.isEmpty()) {
-            setRank(uuid, UNRANKED, true);
+            setRankInternal(uuid, UNRANKED, true);
             return UNRANKED;
         }
         int rank = available.get(random.nextInt(available.size()));
-        setRank(uuid, rank, true);
+        setRankInternal(uuid, rank, true);
         return rank;
     }
 
-    public boolean setRank(UUID uuid, int rank) {
-        return setRank(uuid, rank, false);
+    public void setRank(UUID uuid, int rank) {
+        setRankInternal(uuid, rank, true);
     }
 
-    private boolean setRank(UUID uuid, int rank, boolean bypassFullCheck) {
+    public boolean setRankIfAvailable(UUID uuid, int rank) {
+        return setRankInternal(uuid, rank, false);
+    }
+
+    private boolean setRankInternal(UUID uuid, int rank, boolean bypassFullCheck) {
         if (rank <= 0) {
-            ranks.put(uuid, UNRANKED);
-            saveData();
+            setRankValue(uuid, UNRANKED);
+            saveNow();
+            updateLuckPermsPrefix(uuid, UNRANKED);
             return true;
         }
         if (rank > configManager.getRankCount()) {
             return false;
         }
-        int currentRank = getRank(uuid);
+        int currentRank = getRankOrUnranked(uuid);
         if (!bypassFullCheck && currentRank != rank && getRankCount(rank) >= configManager.getMaxPlayersPerRank()) {
             return false;
         }
-        ranks.put(uuid, rank);
-        saveData();
+        setRankValue(uuid, rank);
+        saveNow();
+        updateLuckPermsPrefix(uuid, rank);
         return true;
     }
 
     public void resetRank(UUID uuid) {
-        ranks.put(uuid, UNRANKED);
-        saveData();
+        setRankValue(uuid, UNRANKED);
+        saveNow();
+        updateLuckPermsPrefix(uuid, UNRANKED);
     }
 
     public void resetAll() {
         ranks.clear();
-        saveData();
+        rebuildCountsFromRanks();
+        saveNow();
+        updateLuckPermsForOnlinePlayers();
     }
 
     public boolean swapRanks(UUID first, UUID second) {
-        int rankA = getRank(first);
-        int rankB = getRank(second);
+        int rankA = getRankOrUnranked(first);
+        int rankB = getRankOrUnranked(second);
         if (rankA <= 0 || rankB <= 0 || rankA == rankB) {
             return false;
         }
-        ranks.put(first, rankB);
-        ranks.put(second, rankA);
-        saveData();
+        setRankValue(first, rankB);
+        setRankValue(second, rankA);
+        saveNow();
+        updateLuckPermsPrefix(first, rankB);
+        updateLuckPermsPrefix(second, rankA);
         return true;
     }
 
     public int getRankCount(int rank) {
-        int count = 0;
-        for (int value : ranks.values()) {
-            if (value == rank) {
-                count++;
-            }
-        }
-        return count;
+        return rankCounts.getOrDefault(rank, 0);
     }
 
     public int getUnrankedCount() {
-        int count = 0;
-        for (int value : ranks.values()) {
-            if (value <= 0) {
-                count++;
-            }
-        }
-        return count;
+        return unrankedCount;
     }
 
     public Map<Integer, Integer> getAllRankCounts() {
@@ -159,7 +169,7 @@ public class RankManager {
         }
         double base = 20.0;
         double extraHearts = 0.0;
-        int rank = getRank(player.getUniqueId());
+        int rank = getRankOrUnranked(player.getUniqueId());
         if (configManager.isHealthBonusesEnabled() && rank > 0) {
             extraHearts = Math.max(0, configManager.getExtraHeartsForRank(rank)) * 2.0;
         }
@@ -172,9 +182,52 @@ public class RankManager {
         }
     }
 
+    public void applyHealthBonusWithRetry(Player player) {
+        if (player == null) {
+            return;
+        }
+        applyHealthBonus(player);
+        new BukkitRunnable() {
+            private int attempts = 0;
+
+            @Override
+            public void run() {
+                if (!player.isOnline()) {
+                    cancel();
+                    return;
+                }
+                applyHealthBonus(player);
+                attempts++;
+                if (attempts >= 5) {
+                    cancel();
+                }
+            }
+        }.runTaskTimer(plugin, 1L, 20L);
+    }
+
     public void applyHealthBonusToOnline() {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            applyHealthBonus(player);
+            applyHealthBonusWithRetry(player);
+        }
+    }
+
+    public void loadAll() {
+        loadData();
+        rebuildCountsFromRanks();
+    }
+
+    public void rebuildCountsFromRanks() {
+        rankCounts.clear();
+        unrankedCount = 0;
+        for (int rank = 1; rank <= configManager.getRankCount(); rank++) {
+            rankCounts.put(rank, 0);
+        }
+        for (int rank : ranks.values()) {
+            if (rank > 0) {
+                rankCounts.put(rank, rankCounts.getOrDefault(rank, 0) + 1);
+            } else {
+                unrankedCount++;
+            }
         }
     }
 
@@ -202,6 +255,10 @@ public class RankManager {
         }
     }
 
+    public void saveNow() {
+        saveData();
+    }
+
     private void saveData() {
         YamlConfiguration config = new YamlConfiguration();
         for (Map.Entry<UUID, Integer> entry : ranks.entrySet()) {
@@ -211,6 +268,47 @@ public class RankManager {
             config.save(dataFile);
         } catch (IOException ex) {
             plugin.getLogger().severe("Failed to save ranks.yml: " + ex.getMessage());
+        }
+    }
+
+    private void setRankValue(UUID uuid, int rank) {
+        Integer previous = ranks.put(uuid, rank);
+        if (previous != null) {
+            adjustCounts(previous, rank);
+        } else {
+            adjustCounts(null, rank);
+        }
+    }
+
+    private void adjustCounts(Integer previousRank, int newRank) {
+        if (previousRank != null) {
+            if (previousRank > 0) {
+                rankCounts.put(previousRank, Math.max(0, rankCounts.getOrDefault(previousRank, 0) - 1));
+            } else {
+                unrankedCount = Math.max(0, unrankedCount - 1);
+            }
+        }
+
+        if (newRank > 0) {
+            rankCounts.put(newRank, rankCounts.getOrDefault(newRank, 0) + 1);
+        } else {
+            unrankedCount++;
+        }
+    }
+
+    private void updateLuckPermsPrefix(UUID uuid, int rank) {
+        if (plugin instanceof RankedSMP rankedSMP) {
+            rankedSMP.updateLuckPermsPrefix(uuid, rank);
+        }
+    }
+
+    private void updateLuckPermsForOnlinePlayers() {
+        if (!(plugin instanceof RankedSMP rankedSMP)) {
+            return;
+        }
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            int rank = getRankOrUnranked(player.getUniqueId());
+            rankedSMP.updateLuckPermsPrefix(player.getUniqueId(), rank);
         }
     }
 }

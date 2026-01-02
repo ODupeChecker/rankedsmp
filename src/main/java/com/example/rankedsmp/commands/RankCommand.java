@@ -37,7 +37,7 @@ public class RankCommand implements CommandExecutor {
                 sender.sendMessage(TextUtils.color(configManager.getMessage("player-not-found")));
                 return true;
             }
-            int rank = rankManager.getRank(target.getUniqueId());
+            int rank = rankManager.getRankOrUnranked(target.getUniqueId());
             int hearts = rank > 0 ? rankManager.getExtraHearts(rank) : 0;
             int potion = rank > 0 ? rankManager.getPotionMinutes(rank) : 0;
             String rankValue = rank > 0 ? String.valueOf(rank) : "Unranked";

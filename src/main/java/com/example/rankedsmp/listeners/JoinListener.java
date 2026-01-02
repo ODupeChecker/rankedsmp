@@ -5,6 +5,7 @@ import com.example.rankedsmp.config.ConfigManager;
 import com.example.rankedsmp.rank.RankManager;
 import com.example.rankedsmp.util.JoinDisplayManager;
 import com.example.rankedsmp.util.TextUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,8 +28,9 @@ public class JoinListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (!rankManager.hasRankEntry(player.getUniqueId())) {
-            int rank = rankManager.assignRandomRank(player.getUniqueId());
+        int rank = rankManager.getRankOrUnranked(player.getUniqueId());
+        if (!rankManager.hasRank(player.getUniqueId())) {
+            rank = rankManager.assignRandomRankIfAvailable(player.getUniqueId());
             if (rank > 0) {
                 player.sendMessage(TextUtils.color(configManager.getMessage("rank-assigned")
                         .replace("%rank%", String.valueOf(rank))));
@@ -36,8 +38,9 @@ public class JoinListener implements Listener {
                 player.sendMessage(TextUtils.color(configManager.getMessage("rank-unranked")));
             }
         }
-        rankManager.applyHealthBonus(player);
+        Bukkit.getScheduler().runTask(plugin, () -> rankManager.applyHealthBonusWithRetry(player));
         plugin.updatePlaceholders(player);
+        plugin.updateLuckPermsPrefix(player, rank);
         joinDisplayManager.showJoinDisplay(player);
     }
 }

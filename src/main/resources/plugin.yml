@@ -3,7 +3,9 @@ main: com.example.rankedsmp.RankedSMP
 version: 1.0.0
 api-version: '1.21'
 author: OpenAI
-softdepend: [PlaceholderAPI]
+softdepend:
+  - PlaceholderAPI
+  - LuckPerms
 commands:
   rank:
     description: View rank info and stats.
